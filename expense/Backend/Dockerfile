@@ -1,0 +1,39 @@
+#FROM node:20
+# FROM node:20.18.3-alpine3.21
+# WORKDIR /opt/backend
+# COPY package.json ./
+# COPY *.js ./
+# RUN npm install
+# ENV DB_HOST="mysql"
+# # ENV DB_HOST="localhost"
+# CMD ["node", "index.js"]
+
+# it will reduces the image size upto 150MB
+# FROM node:20.18.3-alpine3.21 
+# RUN addgroup -S expense && adduser -S expense -G expense
+# RUN mkdir /opt/backend
+# RUN chown -R expense:expense /opt/backend
+# WORKDIR /opt/backend
+# COPY package.json .
+# COPY *.js ./
+# RUN npm install
+# ENV DB_HOST="mysql"
+# USER expense
+# CMD ["node", "index.js"]
+
+From node:20.18.3-alpine3.21 AS builder
+WORKDIR /opt/backend
+COPY package.json ./
+COPY *.js ./
+RUN npm install
+
+
+FROM node:20.18.3-alpine3.21
+RUN addgroup -S expense && adduser -S expense -G expense && \
+    mkdir /opt/backend && \
+    chown -R expense:expense /opt/backend
+ENV DB_HOST="mysql"
+WORKDIR /opt/backend
+USER expense
+COPY --from=builder /opt/backend /opt/backend
+CMD ["node", "index.js"]

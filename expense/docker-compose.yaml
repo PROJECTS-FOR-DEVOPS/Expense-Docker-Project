@@ -1,0 +1,41 @@
+networks:
+  expense: {}
+  # docker volume create mysql
+volumes:
+  mysql:
+services:
+
+  backend:
+    image: backend:1.0.1
+    command: sh -c "until nc -z mysql 3306; do echo 'waiting for mysql...'; sleep 2; done && node /opt/backend/index.js"
+    networks:
+    - expense
+    container_name: backend
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PWD: ExpenseApp@1
+      DB_DATABASE: transactions
+    depends_on:
+    - mysql
+
+  # docker run -d --name mysql --network expense -v mysql:/var/lib/mysql mysql:1.0.0
+  mysql:
+    image: mysql:1.0.1
+    networks:
+    - expense
+    container_name: mysql
+    volumes:
+    - mysql:/var/lib/mysql
+
+  frontend:
+    image: frontend:1.0.1
+    networks:
+    - expense
+    container_name: frontend
+    ports:
+    - 80:80
+    depends_on:
+    - backend
+  
+  
